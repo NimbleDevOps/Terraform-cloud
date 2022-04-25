@@ -4,21 +4,26 @@ on:
       apiToken:
         description: 'Terraform Cloud API Token'
         required: true
-      resourceGroup:
-        description: 'Name of the reosurce group'
-        required: true
-      environment:
-        description: 'Name of the Environment'
-        required: true
-      team:
-        description: 'Name of the team'
-        required: true
-      region:
-        description: 'Name of the region where resources will be created'
-        required: true
       gitHubToken:
         description: 'GitHub Token'
         required: true
+    inputs:
+      resourceGroup:
+        description: 'Name of the reosurce group'
+        required: true
+        type: "string"
+      environment:
+        description: 'Name of the Environment'
+        required: true
+        type: "string"
+      team:
+        description: 'Name of the team'
+        required: true
+        type: "string"
+      region:
+        description: 'Name of the region where resources will be created'
+        required: true
+        type: "string"
 
 jobs:
   terraform:
@@ -51,7 +56,7 @@ jobs:
 
     # Generates an execution plan for Terraform
     - name: Terraform Plan
-      run: terraform plan -var=resource_group_name=${{ secrets.resourceGroup }} -var=environment=${{ secrets.environment }} -var=team=$${{ secrets.team }} -var=location=${{ secrets.region}}
+      run: terraform plan -var=resource_group_name=${{ inputs.resourceGroup }} -var=environment=${{ inputs.environment }} -var=team=$${{ inputs.team }} -var=location=${{ inputs.region}}
 
     # Update Terraform pull request
     - name: Update Pull Request
@@ -77,4 +82,4 @@ jobs:
       # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: terraform apply -auto-approve -var=resource_group_name=${{ secrets.resourceGroup }} -var=environment=${{ secrets.environment }} -var=team=$${{ secrets.team }} -var=location=${{ secrets.region}}
+      run: terraform apply -auto-approve -var=resource_group_name=${{ inputs.resourceGroup }} -var=environment=${{ inputs.environment }} -var=team=$${{ inputs.team }} -var=location=${{ inputs.region}}
