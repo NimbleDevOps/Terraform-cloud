@@ -1,0 +1,22 @@
+name: 'Terraform'
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  development:
+    name: 'Development'
+    uses: ./.github/workflows/terraform-template.yml
+    secrets:
+      apiToken: "${{ secrets.TF_API_TOKEN }}"
+      gitHubToken: "${{ secrets.GITHUB_TOKEN }}"
+      environment: "${{ secrets.TF_ENVIRONMENT }}"
+      resourceGroup: "${{ secrets.TF_RESOURCE_GROUP }}"
+      team: "${{ secrets.TF_TEAM }}"
+      region: "${{ secrets.TF_REGION }}"
