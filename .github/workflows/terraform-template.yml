@@ -1,19 +1,29 @@
-name: 'Terraform'
-
 on:
-  push:
-    branches:
-    - main
-  pull_request:
-
-permissions:
-  contents: read
+  workflow_call:
+    secrets:
+      apiToken:
+        description: 'Terraform Cloud API Token'
+        required: true
+      resourceGroup:
+        description: 'Name of the reosurce group'
+        required: true
+      environment:
+        description: 'Name of the Environment'
+        required: true
+      team:
+        description: 'Name of the team'
+        required: true
+      region:
+        description: 'Name of the region where resources will be created'
+        required: true
+      gitHubToken:
+        description: 'GitHub Token'
+        required: true
 
 jobs:
   terraform:
     name: 'Terraform'
     runs-on: ubuntu-latest
-    environment: production
 
     # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
     defaults:
@@ -29,7 +39,7 @@ jobs:
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v1
       with:
-        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+        cli_config_credentials_token: ${{ secrets.apiToken }}
 
     # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
     - name: Terraform Init
@@ -41,7 +51,7 @@ jobs:
 
     # Generates an execution plan for Terraform
     - name: Terraform Plan
-      run: terraform plan -var=resource_group_name=${{ secrets.TF_RESOURCE_GROUP }} -var=environment=${{ secrets.TF_ENVIRONMENT }} -var=team=$${{ secrets.TF_TEAM }} -var=location=${{ secrets.TF_REGION}}
+      run: terraform plan -var=resource_group_name=${{ secrets.resourceGroup }} -var=environment=${{ secrets.environment }} -var=team=$${{ secrets.team }} -var=location=${{ secrets.region}}
 
     # Update Terraform pull request
     - name: Update Pull Request
@@ -50,7 +60,7 @@ jobs:
       env:
         PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{ secrets.gitHubToken }}
         script: |
           const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
           #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
@@ -67,4 +77,4 @@ jobs:
       # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: terraform apply -auto-approve -var=resource_group_name=${{ secrets.TF_RESOURCE_GROUP }} -var=environment=${{ secrets.TF_ENVIRONMENT }} -var=team=$${{ secrets.TF_TEAM }} -var=location=${{ secrets.TF_REGION}}
+      run: terraform apply -auto-approve -var=resource_group_name=${{ secrets.resourceGroup }} -var=environment=${{ secrets.environment }} -var=team=$${{ secrets.team }} -var=location=${{ secrets.region}}
