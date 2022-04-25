@@ -12,5 +12,5 @@ variable "common_tags" {
   description = "Map of the mandatory standard tags"
 }
 locals {
-  apim_name = format("%s-%s", var.rg_name, "-apim")
+  apim_name = format("%s-%s", var.rg_name, "apim")
 }
