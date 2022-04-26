@@ -20,10 +20,10 @@ jobs:
     name: 'Development'
     uses: ./.github/workflows/terraform-template.yml
     with:
-      environment: ${{ env.environment }}
-      resourceGroup: ${{ env.resourceGroup }}
-      team: ${{ env.team }}
-      region: ${{ env.region }}
+      environment: $environment
+      resourceGroup: $resourceGroup
+      team: $team
+      region: $region
     secrets:
       apiToken: "${{ secrets.TF_API_TOKEN }}"
       gitHubToken: "${{ secrets.GITHUB_TOKEN }}"
