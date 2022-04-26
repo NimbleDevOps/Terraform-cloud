@@ -9,21 +9,15 @@ on:
 permissions:
   contents: read
 
-env:
-  environment: "dev"
-  resourceGroup: "rg-terraform-dev"
-  team: "DevOps"
-  region: "uksouth"
-  
 jobs:
   development:
     name: 'Development'
     uses: ./.github/workflows/terraform-template.yml
     with:
-      environment: $environment
-      resourceGroup: $resourceGroup
-      team: $team
-      region: $region
+      environment: "dev"
+      resourceGroup: "rg-terraform-dev"
+      team: "DevOps"
+      region: "uksouth"
     secrets:
       apiToken: "${{ secrets.TF_API_TOKEN }}"
       gitHubToken: "${{ secrets.GITHUB_TOKEN }}"
