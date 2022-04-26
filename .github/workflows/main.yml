@@ -1,13 +1,23 @@
 name: 'Terraform-Development'
 
 on:
+  workflow_dispatch:
+    inputs:
+      triggerEvent:
+        description: 'Trigger event'     
+        required: true
+        default: 'no' 
+        type: choice
+        options:
+        - yes
+        - no
   push:
     branches:
     - main
     paths-ignore:
       - '**/README.md'
   pull_request:
-
+  
 permissions:
   contents: read
 
