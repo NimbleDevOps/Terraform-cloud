@@ -1,4 +1,4 @@
-name: 'Terraform'
+name: 'Terraform-Development'
 
 on:
   push:
@@ -9,28 +9,71 @@ on:
 permissions:
   contents: read
 
-jobs:
-  development:
-    name: 'Development'
-    uses: ./.github/workflows/terraform-template.yml
-    with:
-      environment: "dev"
-      resourceGroup: "rg-terraform-dev"
-      team: "DevOps"
-      region: "uksouth"
-    secrets:
-      apiToken: "${{ secrets.TF_API_TOKEN }}"
-      gitHubToken: "${{ secrets.GITHUB_TOKEN }}"
+env:
+  environment: "dev"
+  resourceGroup: "rg-terraform-dev"
+  team: "DevOps"
+  region: "uksouth"
 
-  production:
-    name: 'Production'
-    needs: development
-    uses: ./.github/workflows/terraform-template.yml
-    with:
-      environment: "prd"
-      resourceGroup: "rg-terraform-prd"
-      team: "DevOps"
-      region: "uksouth"
-    secrets:
-      apiToken: "${{ secrets.TF_API_TOKEN }}"
-      gitHubToken: "${{ secrets.GITHUB_TOKEN }}"
+jobs:
+  Development:
+    name: 'Development Terraform'
+    runs-on: ubuntu-latest
+
+    # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    # Checkout the repository to the GitHub Actions runner
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    # Install the latest version of Terraform CLI and configure the Terraform CLI configuration file with a Terraform Cloud user API token
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+    # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
+    - name: Terraform Init
+      run: terraform init
+
+    # Checks that all Terraform configuration files adhere to a canonical format
+    - name: Terraform Format
+      run: terraform fmt -check
+    
+    # Valdiate all Terraform configuration
+    - name: Terraform Validate
+      run: terraform validate
+
+    # Generates an execution plan for Terraform
+    - name: Terraform Plan
+      run: terraform plan -var=resource_group_name=${{ env.resourceGroup }} -var=environment=${{ env.environment }} -var=team=$${{ env.team }} -var=location=${{ env.region}}
+
+    # Update Terraform pull request
+    - name: Update Pull Request
+      uses: actions/github-script@v6.0.0
+      if: github.event_name == 'pull_request'
+      env:
+        PLAN: "terraform\n${ steps.plan.outputs.stdout }"
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+          #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+          #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+          #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+          <details><summary>Show Plan</summary>
+          \`\`\`\n
+          ${process.env.PLAN}
+          \`\`\`
+          </details>
+          *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+          
+      # On push to main, build or change infrastructure according to Terraform configuration files
+      # Note: It is recommended to set up a required "strict" status check in your repository for "Terraform Cloud". See the documentation on "strict" required status checks for more information: https://help.github.com/en/github/administering-a-repository/types-of-required-status-checks
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: terraform apply -auto-approve -var=resource_group_name=${{ env.resourceGroup }} -var=environment=${{ env.environment }} -var=team=$${{ env.team }} -var=location=${{ env.region}}
