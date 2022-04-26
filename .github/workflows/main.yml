@@ -9,28 +9,21 @@ on:
 permissions:
   contents: read
 
+env:
+  environment: "dev"
+  resourceGroup: "rg-terraform-dev"
+  team: "DevOps"
+  region: "uksouth"
+  
 jobs:
   development:
     name: 'Development'
     uses: ./.github/workflows/terraform-template.yml
     with:
-      environment: "dev"
-      resourceGroup: "rg-terraform-dev"
-      team: "DevOps"
-      region: "uksouth"
-    secrets:
-      apiToken: "${{ secrets.TF_API_TOKEN }}"
-      gitHubToken: "${{ secrets.GITHUB_TOKEN }}"
-
-  production:
-    name: 'Production'
-    needs: development
-    uses: ./.github/workflows/terraform-template.yml
-    with:
-      environment: "prd"
-      resourceGroup: "rg-terraform-prd"
-      team: "DevOps"
-      region: "uksouth"
+      environment: ${{ env.environment }}
+      resourceGroup: ${{ env.resourceGroup }}
+      team: ${{ env.team }}
+      region: ${{ env.region }}
     secrets:
       apiToken: "${{ secrets.TF_API_TOKEN }}"
       gitHubToken: "${{ secrets.GITHUB_TOKEN }}"
