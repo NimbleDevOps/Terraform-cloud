@@ -1,9 +1,11 @@
-name: 'Terraform'
+name: 'Terraform-Development'
 
 on:
   push:
     branches:
     - main
+    paths-ignore:
+      - '**/README.md'
   pull_request:
 
 permissions:
@@ -16,19 +18,6 @@ jobs:
     with:
       environment: "dev"
       resourceGroup: "rg-terraform-dev"
-      team: "DevOps"
-      region: "uksouth"
-    secrets:
-      apiToken: "${{ secrets.TF_API_TOKEN }}"
-      gitHubToken: "${{ secrets.GITHUB_TOKEN }}"
-
-  production:
-    name: 'Production'
-    needs: development
-    uses: ./.github/workflows/terraform-template.yml
-    with:
-      environment: "prd"
-      resourceGroup: "rg-terraform-prd"
       team: "DevOps"
       region: "uksouth"
     secrets:
