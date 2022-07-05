@@ -4,3 +4,6 @@
 ## Root Module
 
 The root module contains references of all child modules including provider information.
+
+## Deployment
+Deploy the terraform script by Terraform Cloud and GitHub Action
